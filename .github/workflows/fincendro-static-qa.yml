@@ -18,6 +18,8 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
       - name: Run static QA
         run: node --test qa/static-qa.mjs
+      - name: Run hermetic Chromium browser smoke
+        run: node qa/browser-smoke.mjs
