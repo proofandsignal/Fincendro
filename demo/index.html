@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="A prototype for comparing crypto-backed loans using synthetic data.">
+<title>Fincendro Borrow · Prototype</title>
+<style>
+:root{color-scheme:dark;--bg:#10171c;--surface:#19242b;--line:#35444d;--text:#f2f5f2;--muted:#b3c0c5;--accent:#d6fa9c;--amber:#ffd68e;font:100% system-ui,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 100% 0%,#253a32,transparent 55%),var(--bg);color:var(--text);line-height:1.5}
+main,header>div{width:min(1160px,100% - 40px);margin:auto}header{border-bottom:1px solid var(--line)}header>div{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:76px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:780;letter-spacing:-.025em;font-size:1.2rem}.mark{display:grid;place-items:center;width:33px;height:33px;border-radius:9px;background:var(--accent);color:#203017;font-size:1.25rem;font-weight:900}.badge{color:var(--accent);font-size:.83rem;font-weight:650}
+.intro{padding:45px 0 23px}h1{font-size:clamp(2.15rem,5vw,3.85rem);line-height:1.06;letter-spacing:-.055em;margin:0;max-width:15ch}p{margin:0}.intro p{max-width:60ch;margin-top:14px;color:var(--muted)}
+form{display:grid;grid-template-columns:1.15fr 1fr 1fr auto;gap:14px;padding:18px;background:var(--surface);border:1px solid var(--line);border-radius:16px;align-items:end}label{display:grid;gap:5px;font-size:.9rem;color:var(--muted)}input,select,button{font:inherit;min-height:46px;border-radius:8px;border:1px solid #4a5c66;padding:8px 12px}input,select{width:100%;background:#111a20;color:var(--text)}button{cursor:pointer;font-weight:720;background:var(--accent);color:#203017;border-color:transparent}button:disabled{cursor:default;background:#25343d;color:#c2cdd1;border-color:#42525b}button.secondary{background:#23333b;color:var(--text);border-color:#526570}summary{cursor:pointer;color:var(--accent)}:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.results-head{margin:30px 0 15px}h2{font-size:1.45rem;letter-spacing:-.025em;margin:0 0 5px}.muted{color:var(--muted)}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.card{display:flex;flex-direction:column;padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--surface);min-width:0}.card.best{border-color:#95b568}.card h3{font-size:1.25rem;margin:0 0 4px;letter-spacing:-.02em}.status{min-height:3.2em;font-size:.87rem;font-weight:650;color:var(--accent)}.pending{color:var(--amber)}dl{margin:9px 0 14px}.field{padding:9px 0;border-top:1px solid var(--line)}dt{font-size:.81rem;color:var(--muted)}dd{margin:1px 0 0;font-weight:620;overflow-wrap:anywhere}.source{font-size:.78rem;color:var(--muted);margin-top:auto}.referral{margin:24px 0 36px;border:1px solid var(--line);border-radius:16px;padding:18px;background:var(--surface)}.referral p,.referral ul{margin:7px 0 12px}.referral button{margin:0 8px 8px 0}.referral [role=status]{color:var(--accent)}[hidden]{display:none!important}
+@media(max-width:900px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){main,header>div{width:calc(100% - 28px)}.intro{padding-top:32px}form,.cards{grid-template-columns:1fr}.status{min-height:0}header>div{min-height:63px}}
+</style>
+</head>
+<body>
+<header><div><div class="brand"><span class="mark" aria-hidden="true">F</span>Fincendro Borrow</div><span class="badge">Synthetic demo</span></div></header>
+<main>
+<section class="intro" aria-labelledby="title">
+<h1 id="title">Compare crypto-backed loans before you commit.</h1>
+<p>See what each loan would cost, how much collateral it would require, and when liquidation would occur.</p>
+</section>
+<form id="comparison">
+<label for="amount">Loan amount (USDC)<input id="amount" name="amount" type="number" min="1" max="1000000" step="0.01" value="10000" required></label>
+<label for="collateral">Collateral<select id="collateral" name="collateral"><option>ETH</option><option>BTC</option></select></label>
+<label for="market">Example market<select id="market" name="market"><option>Bulgaria</option><option>Germany</option></select></label>
+<button type="submit">Compare loans</button>
+</form>
+<section aria-labelledby="results-title">
+<div class="results-head"><h2 id="results-title">Loan offers</h2><p class="muted" id="result-context" role="status"></p><p class="muted">The 12-month estimate assumes the full principal remains outstanding, with simple interest and a one-time fee paid separately. Cost rankings include only complete fixed-rate offers in the same currency.</p></div>
+<div class="cards" id="offers"></div>
+</section>
+<section class="referral" aria-labelledby="referral-title">
+<h2 id="referral-title">Partner referral</h2>
+<p class="muted">Live referrals require confirmed market eligibility, authorization to refer, and written terms.</p>
+<button type="button" disabled>Continue to partner</button>
+<details><summary>Try a simulated referral</summary>
+<p>Select the requirements met in this example.</p>
+<label><span><input class="gate" type="checkbox" style="width:auto;min-height:0"> Market eligibility</span></label>
+<label><span><input class="gate" type="checkbox" style="width:auto;min-height:0"> Referral authorization</span></label>
+<label><span><input class="gate" type="checkbox" style="width:auto;min-height:0"> Written terms</span></label>
+<p><button class="secondary" id="simulate" type="button" disabled>Preview referral</button></p>
+<p id="simulation-result" role="status" hidden>In a live referral, you would continue to the partner’s website. This simulation stays on this page and shares no data.</p>
+</details>
+</section>
+</main>
+<template id="card-template"><article class="card"><h3></h3><p class="status"></p><dl></dl><p class="source">Source for all fields: Fincendro synthetic example.<br>Example checked: <time datetime="2026-11-23">23 Nov 2026</time>.</p></article></template>
+<script>
+"use strict";
+const offers = [
+  {name:"Atlas", currency:"USDC", rate:0.075, fixed:true, fee:0.013, collateral:["ETH","BTC"], ltv:0.55, liquidation:0.74, markets:["Bulgaria","Germany"]},
+  {name:"Cedar", currency:"USDC", rate:0.081, fixed:true, fee:0.004, collateral:["ETH","BTC"], ltv:0.50, liquidation:0.72, markets:["Bulgaria"]},
+  {name:"Meridian", currency:"USDC", rate:0.044, fixed:false, fee:null, collateral:["ETH"], ltv:0.60, liquidation:0.78, markets:[]}
+];
+const form = document.querySelector("#comparison");
+const cards = document.querySelector("#offers");
+const template = document.querySelector("#card-template");
+const unknown = "Unconfirmed";
+const money = new Intl.NumberFormat("en-GB", {minimumFractionDigits:2, maximumFractionDigits:2});
+const percentage = new Intl.NumberFormat("en-GB", {style:"percent", maximumFractionDigits:2});
+
+function evaluate(offer, amount, market) {
+  const marketKnown = offer.markets.includes(market);
+  const comparable = offer.fixed && offer.fee !== null && marketKnown;
+  const principalCents = Math.round(amount * 100);
+  const interest = Math.round(principalCents * Math.round(offer.rate * 10000) / 10000);
+  const fee = offer.fee === null ? null : Math.round(principalCents * Math.round(offer.fee * 10000) / 10000);
+  const cost = comparable ? interest + fee : null;
+  return {offer, marketKnown, fee, cost};
+}
+
+function render() {
+  const amount = form.elements.amount.valueAsNumber;
+  const collateral = form.elements.collateral.value;
+  const market = form.elements.market.value;
+  const results = offers.filter(offer => offer.collateral.includes(collateral))
+    .map(offer => evaluate(offer, amount, market));
+  const costs = results.map(result => result.cost).filter(cost => cost !== null);
+  const minimum = costs.length >= 2 ? Math.min(...costs) : null;
+  const tied = minimum !== null && costs.filter(cost => cost === minimum).length > 1;
+  document.querySelector("#result-context").textContent =
+    money.format(amount) + " USDC · " + collateral + " · " + market + " · " + costs.length + (costs.length === 1 ? " comparable offer" : " comparable offers");
+  cards.replaceChildren();
+  for (const {offer, marketKnown, fee, cost} of results) {
+    const card = template.content.firstElementChild.cloneNode(true);
+    const best = cost !== null && cost === minimum;
+    const incomplete = fee === null || !marketKnown;
+    card.classList.toggle("best", best);
+    card.querySelector("h3").textContent = offer.name;
+    const status = card.querySelector(".status");
+    status.classList.toggle("pending", incomplete);
+    status.textContent = best ? (tied ? "Joint lowest estimated cost" : "Lowest estimated cost")
+      : incomplete ? "Incomplete terms · unranked"
+      : !offer.fixed ? "Variable rate · unranked"
+      : minimum === null ? "Only comparable offer" : "Comparable offer";
+    const fields = [
+      ["Loan currency", offer.currency],
+      ["Annual interest rate", percentage.format(offer.rate) + (offer.fixed ? " · fixed" : " · variable, starting rate")],
+      ["One-time fee", fee === null ? unknown : percentage.format(offer.fee) + " · " + money.format(fee / 100) + " USDC"],
+      ["Required collateral", collateral + " worth " + money.format(Math.ceil(Math.round(amount * 100) * 10000 / Math.round(offer.ltv * 10000)) / 100) + " USDC"],
+      ["Initial loan-to-value (LTV)", percentage.format(offer.ltv)],
+      ["Liquidation rule", "At " + percentage.format(offer.liquidation) + " LTV"],
+      ["Terms for " + market, marketKnown ? "Available in this example" : unknown],
+      ["Estimated 12-month cost", cost === null ? unknown : money.format(cost / 100) + " USDC"]
+    ];
+    const list = card.querySelector("dl");
+    for (const [label, value] of fields) {
+      const row = document.createElement("div");
+      row.className = "field";
+      const term = document.createElement("dt");
+      term.textContent = label;
+      const description = document.createElement("dd");
+      description.textContent = value;
+      description.classList.toggle("pending", value === unknown);
+      row.append(term, description);
+      list.append(row);
+    }
+    cards.append(card);
+  }
+}
+form.addEventListener("submit", event => {
+  event.preventDefault();
+  render();
+});
+const gates = [...document.querySelectorAll(".gate")];
+const simulation = document.querySelector("#simulate");
+const simulationResult = document.querySelector("#simulation-result");
+form.elements.market.addEventListener("change", () => {
+  gates.forEach(gate => { gate.checked = false; });
+  updateSimulation();
+});
+function updateSimulation() {
+  simulation.disabled = !gates.every(gate => gate.checked);
+  simulationResult.hidden = true;
+}
+gates.forEach(gate => gate.addEventListener("change", updateSimulation));
+simulation.addEventListener("click", () => {
+  if (gates.every(gate => gate.checked)) simulationResult.hidden = false;
+});
+updateSimulation();
+render();
+</script>
+</body>
+</html>
