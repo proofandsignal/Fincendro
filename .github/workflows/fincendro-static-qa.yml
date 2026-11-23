@@ -1,0 +1,29 @@
+name: Fincendro Static QA
+on:
+  push:
+    branches:
+      - demo/fincendro-borrow-v0.1
+    paths:
+      - demo/**
+      - qa/**
+      - .github/workflows/fincendro-static-qa.yml
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - demo/**
+      - qa/**
+      - .github/workflows/fincendro-static-qa.yml
+permissions:
+  contents: read
+jobs:
+  static-qa:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Run static QA
+        run: node --test qa/static-qa.mjs
