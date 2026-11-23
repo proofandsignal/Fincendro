@@ -1,18 +1,12 @@
 name: Fincendro Static QA
 on:
-  push:
-    branches:
-      - demo/fincendro-borrow-v0.1
-    paths:
-      - demo/**
-      - qa/**
-      - .github/workflows/fincendro-static-qa.yml
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
       - demo/**
       - qa/**
       - .github/workflows/fincendro-static-qa.yml
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
