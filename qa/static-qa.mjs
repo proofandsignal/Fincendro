@@ -6,6 +6,8 @@ const html = await readFile(new URL("../demo/index.html", import.meta.url), "utf
 
 test("Fincendro demo preserves English synthetic boundary", () => {
   assert.match(html, /<html lang="en">/);
+  assert.match(html, /<title>Fincendro · Prototype<\/title>/);
+  assert.doesNotMatch(html, /Fincendro Borrow/);
   assert.match(html, /Synthetic demo/);
   assert.match(html, /Fincendro synthetic example/);
   assert.match(html, /crypto-backed loans/i);
