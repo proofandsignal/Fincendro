@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="A prototype for comparing crypto-backed loans using synthetic data.">
-<title>Fincendro Borrow · Prototype</title>
+<title>Fincendro · Prototype</title>
 <style>
 :root{color-scheme:dark;--bg:#10171c;--surface:#19242b;--line:#35444d;--text:#f2f5f2;--muted:#b3c0c5;--accent:#d6fa9c;--amber:#ffd68e;font:100% system-ui,sans-serif}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 100% 0%,#253a32,transparent 55%),var(--bg);color:var(--text);line-height:1.5}
@@ -18,11 +18,11 @@ form{display:grid;grid-template-columns:1.15fr 1fr 1fr auto;gap:14px;padding:18p
 </style>
 </head>
 <body>
-<header><div><div class="brand"><span class="mark" aria-hidden="true">F</span>Fincendro Borrow</div><span class="badge">Synthetic demo</span></div></header>
+<header><div><div class="brand"><span class="mark" aria-hidden="true">F</span>Fincendro</div><span class="badge">Synthetic demo</span></div></header>
 <main>
 <section class="intro" aria-labelledby="title">
 <h1 id="title">Compare crypto-backed loans before you commit.</h1>
-<p>See what each loan would cost, how much collateral it would require, and when liquidation would occur.</p>
+<p>Compare the estimated cost, required collateral and liquidation threshold for the same loan amount.</p>
 </section>
 <form id="comparison">
 <label for="amount">Loan amount (USDC)<input id="amount" name="amount" type="number" min="1" max="1000000" step="0.01" value="10000" required></label>
@@ -47,6 +47,7 @@ form{display:grid;grid-template-columns:1.15fr 1fr 1fr auto;gap:14px;padding:18p
 <p id="simulation-result" role="status" hidden>In a live referral, you would continue to the partner’s website. This simulation stays on this page and shares no data.</p>
 </details>
 </section>
+<section class="referral" aria-labelledby="about-title"><h2 id="about-title">About Fincendro</h2><p class="muted">Fincendro helps you compare crypto-backed credit terms. All providers, market terms and figures in this demo are fictional. The referral preview stays on this device.</p></section>
 </main>
 <template id="card-template"><article class="card"><h3></h3><p class="status"></p><dl></dl><p class="source">Source for all fields: Fincendro synthetic example.<br>Example checked: <time datetime="2026-11-23">23 Nov 2026</time>.</p></article></template>
 <script>
