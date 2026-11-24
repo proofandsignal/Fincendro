@@ -1,5 +1,5 @@
 /**
- * Hermetic Chromium smoke for Fincendro's synthetic Borrow demo.
+ * Hermetic Chromium smoke for the Fincendro synthetic demo.
  * Uses only a preinstalled Chrome/Chromium and Node's CDP WebSocket.
  * It is not deployed HTTPS, Samsung, legal, or owner approval evidence.
  */
@@ -103,7 +103,7 @@ const server = createServer((request, response) => {
     response.end("Not found");
     return;
   }
-  response.writeHead(200, { "content-type": "text/html; charset=utf-8", "content-security-policy": "default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'" });
+  response.writeHead(200, { "content-type": "text/html; charset=utf-8", "content-security-policy": "default-src 'self'; img-src 'self' data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'" });
   response.end(html);
 });
 
@@ -188,6 +188,10 @@ try {
     assert.ok(metrics.scroll <= width + 2, "horizontal overflow at " + width + "px");
   }
 
+  await cdp.eval("document.querySelector('#market').value = 'Bulgaria'; document.querySelector('#collateral').value = 'ETH'; document.querySelector('#comparison').requestSubmit()");
+  const risk = await cdp.eval("Array.from(document.querySelectorAll('.card'), c => c.innerText)");
+  assert.ok(risk[0].includes("78.57% LTV · threshold reached"));
+  assert.ok(risk[1].includes("71.43% LTV · below threshold"));
   const external = cdp.requests.filter(url => url && !url.startsWith(appUrl) && !url.startsWith("data:") && !url.startsWith("about:"));
   assert.deepEqual(external, []);
   assert.deepEqual(cdp.exceptions, []);
