@@ -5,6 +5,7 @@
  */
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
+import { createServer as createNetServer } from "node:net";
 import { spawn, spawnSync } from "node:child_process";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -19,6 +20,20 @@ function locateChrome() {
     if (result.status === 0) return result.stdout.trim();
   }
   throw new Error("No preinstalled Chromium/Chrome; abort without downloading");
+}
+
+
+async function allocatePort() {
+  const probe = createNetServer();
+  await new Promise((resolve, reject) => {
+    probe.once("error", reject);
+    probe.listen(0, "127.0.0.1", resolve);
+  });
+  const address = probe.address();
+  const port = typeof address === "object" && address ? address.port : 0;
+  await new Promise(resolve => probe.close(resolve));
+  if (!port) throw new Error("Unable to allocate a local DevTools port");
+  return port;
 }
 
 async function eventually(fn, description, attempts = 150) {
@@ -101,20 +116,20 @@ try {
   await once(server, "listening");
   const appUrl = "http://127.0.0.1:" + server.address().port;
 
+  const debuggingPort = await allocatePort();
   chrome = spawn(locateChrome(), [
     "--headless=new", "--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage",
     "--disable-background-networking", "--disable-extensions", "--no-first-run",
-    "--no-default-browser-check", "--remote-allow-origins=*", "--remote-debugging-port=0",
+    "--no-default-browser-check", "--remote-allow-origins=*", "--remote-debugging-port=" + debuggingPort,
     "--user-data-dir=" + profile, "about:blank",
   ], { stdio: ["ignore", "ignore", "pipe"] });
 
   let chromeError = "";
   chrome.stderr.on("data", chunk => { chromeError = (chromeError + String(chunk)).slice(-2000); });
-  const portFile = join(profile, "DevToolsActivePort");
   const port = await eventually(async () => {
     if (chrome.exitCode !== null) throw new Error("Chrome exited: " + chromeError);
-    const data = await readFile(portFile, "utf8");
-    return Number(data.split("\n")[0]) || false;
+    const response = await fetch("http://127.0.0.1:" + debuggingPort + "/json/version");
+    return response.ok ? debuggingPort : false;
   }, "Chrome DevTools endpoint");
 
   const page = await eventually(async () => {
