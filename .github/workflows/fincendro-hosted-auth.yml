@@ -1,5 +1,8 @@
 name: Fincendro Hosted Anonymous DENY
 on:
+  push:
+    branches:
+      - demo/fincendro-borrow-v0.1
   pull_request:
     paths:
       - qa/hosted-anonymous.mjs
