@@ -1,0 +1,23 @@
+name: Fincendro Hosted Anonymous DENY
+on:
+  pull_request:
+    paths:
+      - qa/hosted-anonymous.mjs
+      - preview/qa-server.mjs
+      - .github/workflows/fincendro-hosted-auth.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  hosted-anonymous-access:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify HTTPS anonymous DENY without any reviewer credentials
+        run: node qa/hosted-anonymous.mjs
