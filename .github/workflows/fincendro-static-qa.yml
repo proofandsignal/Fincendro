@@ -5,6 +5,7 @@ on:
     paths:
       - demo/**
       - qa/**
+      - preview/**
       - .github/workflows/fincendro-static-qa.yml
   workflow_dispatch:
 permissions:
@@ -21,5 +22,7 @@ jobs:
           node-version: "22"
       - name: Run static QA
         run: node --test qa/static-qa.mjs
+      - name: Test authenticated preview gate
+        run: node --test preview/qa-server.test.mjs
       - name: Run hermetic Chromium browser smoke
         run: node qa/browser-smoke.mjs
